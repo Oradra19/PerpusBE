@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: 'https://ketemuin.vercel.app/',
   methods: 'GET,POST,PUT,DELETE',
   credentials: true
 }));
@@ -31,5 +31,5 @@ app.use('/api/barang', barangRoutes);
 
 
 app.listen(port, () => {
-  console.log(`Server berjalan di http://localhost:${port}`);
+  console.log(`Server berjalan di https://ketemuin.vercel.app`);
 });
