@@ -31,5 +31,5 @@ app.use('/api/barang', barangRoutes);
 
 
 app.listen(port, () => {
-  console.log(`Server berjalan di https://ketemuin.vercel.app`);
+  console.log(`Server berjalan di http://localhost:${port}`);
 });
