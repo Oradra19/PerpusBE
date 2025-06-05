@@ -25,7 +25,7 @@ app.use(cors({
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static('uploads'));
 
-app.use('/api/',       loginRoutes);
+app.use('/api/login',       loginRoutes);
 app.use('/api/',       registerRoutes);
 app.use('/api/barang', barangRoutes);
 
