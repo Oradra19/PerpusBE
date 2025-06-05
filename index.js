@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use(cors({
-  origin: 'https://ketemuin.vercel.app/',
+  origin: 'https://ketemuin.vercel.app',
   methods: 'GET,POST,PUT,DELETE',
   credentials: true
 }));
