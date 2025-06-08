@@ -9,7 +9,7 @@ export const registerUser = async (req, res) => {
   }
 
   try {
-    const existingUser = await Register.findByEmail(email);
+    const existingUser = await Register.findByusername(username);
     if (existingUser) {
       return res.status(400).json({ message: "Email sudah terdaftar" });
     }
