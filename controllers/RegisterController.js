@@ -2,9 +2,9 @@ import bcrypt from 'bcrypt';
 import Register from "../models/DataRegister.js";
 
 export const registerUser = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, username, email, password } = req.body;
 
-  if (!name ||  !email || !password) {
+  if (!name ||  !username ||  !email || !password) {
     return res.status(400).json({ message: "Semua data harus diisi" });
   }
 
@@ -17,7 +17,8 @@ export const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     
     const userId = await Register.create(
-      name, 
+      name,
+      username, 
       email, 
       hashedPassword, 
     );
