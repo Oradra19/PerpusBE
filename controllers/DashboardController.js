@@ -2,9 +2,9 @@ import db from "../db/config.js";
 
 export const getDashboardData = async (req, res) => {
   try {
-    const [lost] = await db.query("SELECT COUNT(*) AS total FROM barang WHERE status = 'hilang'");
-    const [found] = await db.query("SELECT COUNT(*) AS total FROM barang WHERE status = 'ditemukan'");
-    const [archived] = await db.query("SELECT COUNT(*) AS total FROM barang WHERE status = 'arsip'");
+    const [lost] = await db.query("SELECT COUNT(*) AS total FROM items WHERE status_barang = 'hilang'");
+    const [found] = await db.query("SELECT COUNT(*) AS total FROM items WHERE status_barang = 'ditemukan'");
+    const [archived] = await db.query("SELECT COUNT(*) AS total FROM items WHERE status_barang = 'arsip'");
 
     return res.status(200).json({
       success: true,
