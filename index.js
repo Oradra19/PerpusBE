@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import loginRoutes from './routes/Login.js';
 import registerRoutes from './routes/Register.js';
 import barangRoutes from './routes/Barang.js';
+import DashboardRoute from "./routes/Dashboard.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -33,23 +34,14 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-
-// const allowedOrigins = ['https://nusaira.vercel.app', 'http://localhost:5173'];
-// app.use(cors({
-//   origin: (origin, callback) => {
-//     if (allowedOrigins.includes(origin)) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error('Not allowed by CORS'));
-//     }
-//   }
-// }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static('uploads'));
 
 app.use('/api/',       loginRoutes);
 app.use('/api/',       registerRoutes);
 app.use('/api/barang', barangRoutes);
+app.use("/api/dashboard", DashboardRoute);
+
 
 
 app.listen(port, () => {
