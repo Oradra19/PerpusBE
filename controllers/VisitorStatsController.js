@@ -8,6 +8,7 @@ export const countVisitor = async (req, res) => {
 
     res.json({ success: true, message: "Visitor counted" });
   } catch (error) {
+    console.error("Count visitor error:", error);
     res.status(500).json({ success: false, error: error.message });
   }
 };
@@ -22,9 +23,10 @@ export const getVisitorStats = async (req, res) => {
       success: true,
       daily,
       weekly,
-      monthly
+      monthly,
     });
   } catch (error) {
+    console.error("Get visitor stats error:", error);
     res.status(500).json({ success: false, error: error.message });
   }
 };

@@ -41,27 +41,24 @@ const VisitorStats = {
   // GET DATA
   async getDaily(limit = 30) {
     const [rows] = await db.execute(
-      `SELECT * FROM visitors_daily ORDER BY date DESC LIMIT ?`,
-      [limit]
+      `SELECT * FROM visitors_daily ORDER BY date DESC LIMIT ${limit}`
     );
     return rows;
   },
 
   async getWeekly(limit = 12) {
     const [rows] = await db.execute(
-      `SELECT * FROM visitors_weekly ORDER BY year DESC, week DESC LIMIT ?`,
-      [limit]
+      `SELECT * FROM visitors_weekly ORDER BY year DESC, week DESC LIMIT ${limit}`
     );
     return rows;
   },
 
   async getMonthly(limit = 12) {
     const [rows] = await db.execute(
-      `SELECT * FROM visitors_monthly ORDER BY year DESC, month DESC LIMIT ?`,
-      [limit]
+      `SELECT * FROM visitors_monthly ORDER BY year DESC, month DESC LIMIT ${limit}`
     );
     return rows;
-  }
+  },
 };
 
 // Function cari week number
