@@ -1,4 +1,4 @@
-import VisitorStats from "../models/VisitorStats.js";
+import VisitorStats from "../models/DataVisitors.js";
 
 export const countVisitor = async (req, res) => {
   try {
