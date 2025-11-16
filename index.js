@@ -7,6 +7,7 @@ import loginRoutes from './routes/Login.js';
 import registerRoutes from './routes/Register.js';
 import barangRoutes from './routes/Barang.js';
 import DashboardRoute from "./routes/Dashboard.js";
+import VisitorRoute from "./routes/VisitorStats.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -41,6 +42,8 @@ app.use('/api/',       loginRoutes);
 app.use('/api/',       registerRoutes);
 app.use('/api/barang', barangRoutes);
 app.use("/api/dashboard", DashboardRoute);
+app.use("/api/visitor", VisitorRoute);
+
 
 
 
