@@ -24,7 +24,7 @@ app.use(express.urlencoded({ extended: false }));
 // ==============================
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://perpus-fe.vercel.app"  // GANTI DENGAN DOMAIN FE MU
+  "https://ketemuin.vercel.app"  // GANTI DENGAN DOMAIN FE MU
 ];
 
 const corsOptions = {
