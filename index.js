@@ -15,37 +15,43 @@ const __dirname = dirname(__filename);
 const app = express();
 const port = process.env.PORT || 3000;
 
-
 app.use(cookieParser());
-app.use(express.json());  
-app.use(express.urlencoded({ extended: false })); 
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-// app.use(cors({
-//   origin: 'http://localhost:5173', 
-//   methods: 'GET,POST,PUT,DELETE',
-//   credentials: true
-// }));
+// ==============================
+//          FIX CORS
+// ==============================
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://perpus-fe.vercel.app"  // GANTI DENGAN DOMAIN FE MU
+];
 
-//sementara
 const corsOptions = {
-  origin: '*',  
-  methods: 'GET, POST, PUT, DELETE',
-  allowedHeaders: 'Content-Type, Authorization',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log("CORS BLOCKED:", origin);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: "GET,POST,PUT,DELETE",
+  allowedHeaders: "Content-Type, Authorization",
   credentials: true
 };
+
 app.use(cors(corsOptions));
+// ==============================
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static('uploads'));
 
-app.use('/api/',       loginRoutes);
-app.use('/api/',       registerRoutes);
+app.use('/api/', loginRoutes);
+app.use('/api/', registerRoutes);
 app.use('/api/barang', barangRoutes);
 app.use("/api/dashboard", DashboardRoute);
 app.use("/api/visitor", VisitorRoute);
-
-
-
 
 app.listen(port, () => {
   console.log(`Server berjalan di http://localhost:${port}`);
