@@ -29,12 +29,7 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.log("CORS BLOCKED:", origin);
-      callback(new Error("Not allowed by CORS"));
-    }
+    callback(null, true); 
   },
   methods: "GET,POST,PUT,DELETE",
   allowedHeaders: "Content-Type, Authorization",
@@ -42,6 +37,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+
 // ==============================
 
 app.use(express.static(path.join(__dirname, 'public')));
