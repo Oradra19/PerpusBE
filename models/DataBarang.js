@@ -7,13 +7,19 @@ class Barang {
     this.deskripsi = data.deskripsi || "";
     this.lokasi_ditemukan = data.lokasi_ditemukan || "";
     this.tanggal_ditemukan = data.tanggal_ditemukan || null;
-    this.status_barang = data.status_barang || "ditemukan";
+    this.status_barang = data.status_barang || "";
     this.kategori = data.kategori || "";
     this.no_pengambil = data.no_pengambil || null;
-    this.is_utama = data.is_utama || null; // dari tabel item_photos
+
+    this.nama_pengambil = data.nama_pengambil || null;
+    this.foto_pengambil_url = data.foto_pengambil_url || null;
+    this.tanggal_diambil = data.tanggal_diambil || null;
+
+    this.is_utama = data.is_utama || null;
     this.created_at = data.created_at || new Date();
   }
 
+  // CREATE
   static async save(data) {
     const requiredFields = [
       "nama_barang",
@@ -23,8 +29,9 @@ class Barang {
       "status_barang",
       "kategori",
     ];
+
     const missingFields = requiredFields.filter(
-      (field) => !data[field]?.toString().trim()
+      (field) => !data[field]?.toString().trim(),
     );
 
     if (missingFields.length > 0) {
@@ -33,7 +40,16 @@ class Barang {
 
     const query = `
       INSERT INTO items 
-      (nama_barang, deskripsi, lokasi_ditemukan, tanggal_ditemukan, status_barang, kategori, no_pengambil, created_at)
+      (
+        nama_barang,
+        deskripsi,
+        lokasi_ditemukan,
+        tanggal_ditemukan,
+        status_barang,
+        kategori,
+        no_pengambil,
+        created_at
+      )
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
@@ -51,22 +67,20 @@ class Barang {
     return { id: result.insertId, ...data };
   }
 
+  // READ
   static async getAll() {
     const query = `
       SELECT 
         items.*,
         ip.url_foto AS is_utama
       FROM items
-      LEFT JOIN item_photos ip ON items.id = ip.item_id AND ip.is_utama = 1
+      LEFT JOIN item_photos ip 
+        ON items.id = ip.item_id AND ip.is_utama = 1
       ORDER BY items.created_at DESC
     `;
-    try {
-      const [results] = await db.execute(query);
-      return results;
-    } catch (error) {
-      console.error("Error saat mengambil semua data Item:", error.message);
-      throw new Error("Gagal mengambil data Item.");
-    }
+
+    const [results] = await db.execute(query);
+    return results;
   }
 
   static async getById(id) {
@@ -75,65 +89,32 @@ class Barang {
         items.*,
         ip.url_foto AS is_utama
       FROM items
-      LEFT JOIN item_photos ip ON items.id = ip.item_id AND ip.is_utama = 1
+      LEFT JOIN item_photos ip 
+        ON items.id = ip.item_id AND ip.is_utama = 1
       WHERE items.id = ?
     `;
-    try {
-      const [results] = await db.execute(query, [id]);
-      if (results.length === 0) {
-        throw new Error(`Item dengan ID ${id} tidak ditemukan.`);
-      }
-      return results[0];
-    } catch (error) {
-      console.error(
-        "Error saat mengambil data Item berdasarkan ID:",
-        error.message
-      );
-      throw new Error(`Gagal mengambil data Item dengan ID ${id}.`);
+
+    const [results] = await db.execute(query, [id]);
+    if (results.length === 0) {
+      throw new Error(`Item dengan ID ${id} tidak ditemukan.`);
     }
+    return results[0];
   }
 
-  static async update(id, data) {
+  static async getByStatus(status) {
     const query = `
-      UPDATE items
-      SET nama_barang = ?, deskripsi = ?, lokasi_ditemukan = ?, tanggal_ditemukan = ?, status_barang = ?, kategori = ?, no_pengambil = ?
-      WHERE id = ?
+      SELECT 
+        items.*,
+        ip.url_foto AS is_utama
+      FROM items
+      LEFT JOIN item_photos ip 
+        ON items.id = ip.item_id AND ip.is_utama = 1
+      WHERE items.status_barang = ?
+      ORDER BY items.created_at DESC
     `;
-    try {
-      const [result] = await db.execute(query, [
-        data.nama_barang,
-        data.deskripsi,
-        data.lokasi_ditemukan,
-        data.tanggal_ditemukan,
-        data.status_barang,
-        data.kategori,
-        data.no_pengambil || null,
-        id,
-      ]);
-      if (result.affectedRows === 0) {
-        throw new Error(
-          `Item dengan ID ${id} tidak ditemukan untuk diperbarui.`
-        );
-      }
-      return result;
-    } catch (error) {
-      console.error("Error saat memperbarui Item:", error.message);
-      throw new Error(`Gagal memperbarui data Item dengan ID ${id}.`);
-    }
-  }
 
-  static async delete(id) {
-    const query = "DELETE FROM items WHERE id = ?";
-    try {
-      const [result] = await db.execute(query, [id]);
-      if (result.affectedRows === 0) {
-        throw new Error(`Item dengan ID ${id} tidak ditemukan untuk dihapus.`);
-      }
-      return result;
-    } catch (error) {
-      console.error("Error saat menghapus Item:", error.message);
-      throw new Error(`Gagal menghapus data Item dengan ID ${id}.`);
-    }
+    const [results] = await db.execute(query, [status]);
+    return results;
   }
 
   static async searchByName(nama_barang) {
@@ -142,85 +123,140 @@ class Barang {
         items.*,
         ip.url_foto AS is_utama
       FROM items
-      LEFT JOIN item_photos ip ON items.id = ip.item_id AND ip.is_utama = 1
+      LEFT JOIN item_photos ip 
+        ON items.id = ip.item_id AND ip.is_utama = 1
       WHERE items.nama_barang LIKE ?
     `;
-    try {
-      const [results] = await db.execute(query, [`%${nama_barang}%`]);
-      return results;
-    } catch (error) {
-      console.error("Error saat mencari Item berdasarkan nama:", error.message);
-      throw new Error("Gagal mencari Item.");
-    }
+
+    const [results] = await db.execute(query, [`%${nama_barang}%`]);
+    return results;
   }
 
-  static async getByStatus(status) {
+  // UPDATE UMUM
+  static async update(id, data) {
     const query = `
-      SELECT 
-  items.*,
-  ip.url_foto AS is_utama
-FROM items
-LEFT JOIN (
-  SELECT item_id, url_foto
-  FROM item_photos
-  WHERE is_utama = 1
-) ip ON items.id = ip.item_id
-WHERE items.status_barang = ?
-
+      UPDATE items
+      SET 
+        nama_barang = ?,
+        deskripsi = ?,
+        lokasi_ditemukan = ?,
+        tanggal_ditemukan = ?,
+        status_barang = ?,
+        kategori = ?,
+        no_pengambil = ?
+      WHERE id = ?
     `;
-    try {
-      const [results] = await db.execute(query, [status]);
-      console.log("Results:", results);
-      return results;
-    } catch (error) {
-      console.error(
-        "Error saat mengambil data berdasarkan status:",
-        error.message
-      );
-      throw new Error("Gagal mengambil data berdasarkan status.");
+
+    const [result] = await db.execute(query, [
+      data.nama_barang,
+      data.deskripsi,
+      data.lokasi_ditemukan,
+      data.tanggal_ditemukan,
+      data.status_barang,
+      data.kategori,
+      data.no_pengambil || null,
+      id,
+    ]);
+
+    if (result.affectedRows === 0) {
+      throw new Error(`Item dengan ID ${id} tidak ditemukan.`);
     }
+
+    return result;
   }
 
-  static async updateNoPengambil(id, no_pengambil, status_barang = "diambil") {
-    const query = `
+  // SERAH TERIMA BARANG
+  static async serahTerima(id, data) {
+    let query = `
     UPDATE items
-    SET no_pengambil = ?, status_barang = ?
-    WHERE id = ?
+    SET
+      nama_pengambil = ?,
+      nim_pengambil = ?,
+      no_pengambil = ?,
+      status_barang = ?,
+      tanggal_diambil = NOW()
   `;
-    try {
-      const [result] = await db.execute(query, [
-        no_pengambil,
-        status_barang,
-        id,
-      ]);
-      if (result.affectedRows === 0) {
-        throw new Error(
-          `Item dengan ID ${id} tidak ditemukan untuk diperbarui.`
-        );
-      }
-      return result;
-    } catch (error) {
-      console.error(
-        "Error saat update no_pengambil dan status_barang:",
-        error.message
-      );
-      throw new Error("Gagal update data pengambil.");
+
+    const values = [
+      data.nama_pengambil,
+      data.nim_pengambil,
+      data.no_pengambil,
+      data.status_barang || "arsip",
+    ];
+
+    if (data.foto_pengambil_url) {
+      query += `, foto_pengambil_url = ?`;
+      values.push(data.foto_pengambil_url);
     }
+
+    query += ` WHERE id = ?`;
+    values.push(id);
+
+    const [result] = await db.execute(query, values);
+
+    if (result.affectedRows === 0) {
+      throw new Error(`Item dengan ID ${id} tidak ditemukan.`);
+    }
+
+    return result;
   }
+
+  // UPDATE NO PENGAMBIL
+  static async updateNoPengambil(
+    id,
+    no_pengambil,
+    status_barang = "ditemukan",
+  ) {
+    const query = `
+      UPDATE items
+      SET no_pengambil = ?, status_barang = ?
+      WHERE id = ?
+    `;
+
+    const [result] = await db.execute(query, [no_pengambil, status_barang, id]);
+
+    if (result.affectedRows === 0) {
+      throw new Error(`Item dengan ID ${id} tidak ditemukan.`);
+    }
+
+    return result;
+  }
+
+  // AUTO ARSIP 30 HARI
+  static async autoArchive() {
+    const query = `
+      UPDATE items
+      SET status_barang = 'arsip'
+      WHERE status_barang != 'arsip'
+      AND created_at <= NOW() - INTERVAL 30 DAY
+    `;
+
+    await db.execute(query);
+  }
+
+  // DELETE
+  static async delete(id) {
+    const query = "DELETE FROM items WHERE id = ?";
+
+    const [result] = await db.execute(query, [id]);
+    if (result.affectedRows === 0) {
+      throw new Error(`Item dengan ID ${id} tidak ditemukan.`);
+    }
+
+    return result;
+  }
+
+  // FOTO
   static async getPhotosByItemId(item_id) {
     const query = `
-    SELECT id, url_foto, is_utama
-    FROM item_photos
-    WHERE item_id = ?
-    ORDER BY is_utama DESC, id ASC
-  `;
-    try {
-      const [results] = await db.execute(query, [item_id]);
-      return results;
-    } catch (error) {
-      console.error("Gagal mengambil foto item:", error.message);
-      throw new Error("Gagal mengambil foto item.");
-    }
+      SELECT id, url_foto, is_utama
+      FROM item_photos
+      WHERE item_id = ?
+      ORDER BY is_utama DESC, id ASC
+    `;
+
+    const [results] = await db.execute(query, [item_id]);
+    return results;
   }
 }
 
