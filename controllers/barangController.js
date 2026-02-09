@@ -64,34 +64,29 @@ class BarangController {
     }
   }
 
-  // UPDATE BARANG + FOTO
-  static async update(req, res) {
-    try {
-      const { id } = req.params;
+ static async update(req, res) {
+  try {
+    const { id } = req.params;
 
-      await Barang.update(id, req.body);
+    const payload = { ...req.body };
 
-      if (req.files && req.files.length > 0) {
-        await FotoBarang.deleteByItemId(id);
-
-        const fotoPromises = req.files.map((file, index) =>
-          FotoBarang.save({
-            item_id: id,
-            url_foto: file.path,
-            is_utama: index === 0,
-          }),
-        );
-
-        await Promise.all(fotoPromises);
-      }
-
-      res.status(200).json({
-        message: "Barang berhasil diperbarui",
-      });
-    } catch (error) {
-      res.status(400).json({ message: error.message });
+    if (req.file) {
+      payload.foto_pengambil_url = req.file.path;
     }
+
+    await Barang.update(id, payload);
+
+    res.status(200).json({
+      message: "Barang berhasil diperbarui",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({
+      message: error.message,
+    });
   }
+}
+
 
   // DELETE BARANG
   static async delete(req, res) {
@@ -131,65 +126,8 @@ class BarangController {
     }
   }
 
-  // UPDATE NO PENGAMBIL
-  static async updateNoPengambil(req, res) {
-    try {
-      const { id } = req.params;
-      const { no_pengambil, status_barang } = req.body;
+  
 
-      if (!no_pengambil) {
-        return res.status(400).json({
-          message: "no_pengambil wajib diisi",
-        });
-      }
-
-      await Barang.update(id, {
-        no_pengambil,
-        status_barang: status_barang || "ditemukan",
-      });
-
-      res.status(200).json({
-        message: "No pengambil berhasil diperbarui",
-      });
-    } catch (error) {
-      res.status(400).json({ message: error.message });
-    }
-  }
-
-  // SERAH TERIMA BARANG
-  static async serahTerima(req, res) {
-    try {
-      const { id } = req.params;
-      const { nama_pengambil, nim_pengambil, no_pengambil, status_barang } =
-        req.body;
-
-      if (!nama_pengambil) {
-        return res.status(400).json({
-          message: "Nama pengambil wajib diisi",
-        });
-      }
-
-      const payload = {
-        nama_pengambil,
-        nim_pengambil: nim_pengambil || null,
-        no_pengambil: no_pengambil || null,
-        status_barang: status_barang || "arsip",
-      };
-
-      // 🔥 FOTO OPSIONAL
-      if (req.file) {
-        payload.foto_pengambil_url = req.file.path;
-      }
-
-      await Barang.serahTerima(id, payload);
-
-      res.status(200).json({
-        message: "Status barang berhasil diperbarui",
-      });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  }
 }
 
 export default BarangController;

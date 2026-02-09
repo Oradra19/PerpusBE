@@ -132,95 +132,52 @@ class Barang {
     return results;
   }
 
-  // UPDATE UMUM
-  static async update(id, data) {
-    const query = `
-      UPDATE items
-      SET 
-        nama_barang = ?,
-        deskripsi = ?,
-        lokasi_ditemukan = ?,
-        tanggal_ditemukan = ?,
-        status_barang = ?,
-        kategori = ?,
-        no_pengambil = ?
-      WHERE id = ?
-    `;
+ // UPDATE UNIVERSAL (SATU-SATUNYA)
+static async update(id, data) {
+  const fields = [];
+  const values = [];
 
-    const [result] = await db.execute(query, [
-      data.nama_barang,
-      data.deskripsi,
-      data.lokasi_ditemukan,
-      data.tanggal_ditemukan,
-      data.status_barang,
-      data.kategori,
-      data.no_pengambil || null,
-      id,
-    ]);
+  const allowedFields = [
+    "status_barang",
+    "nama_pengambil",
+    "nim_pengambil",
+    "no_pengambil",
+    "foto_pengambil_url",
+  ];
 
-    if (result.affectedRows === 0) {
-      throw new Error(`Item dengan ID ${id} tidak ditemukan.`);
+  allowedFields.forEach((key) => {
+    if (data[key] !== undefined) {
+      fields.push(`${key} = ?`);
+      values.push(data[key]);
     }
+  });
 
-    return result;
+  // tanggal_diambil hanya kalau status jadi arsip
+  if (data.status_barang === "arsip") {
+    fields.push("tanggal_diambil = NOW()");
   }
 
-  // SERAH TERIMA BARANG
-  static async serahTerima(id, data) {
-    let query = `
+  if (fields.length === 0) {
+    throw new Error("Tidak ada data yang diupdate");
+  }
+
+  const query = `
     UPDATE items
-    SET
-      nama_pengambil = ?,
-      nim_pengambil = ?,
-      no_pengambil = ?,
-      status_barang = ?,
-      tanggal_diambil = NOW()
+    SET ${fields.join(", ")}
+    WHERE id = ?
   `;
 
-    const values = [
-      data.nama_pengambil,
-      data.nim_pengambil,
-      data.no_pengambil,
-      data.status_barang || "arsip",
-    ];
+  values.push(id);
 
-    if (data.foto_pengambil_url) {
-      query += `, foto_pengambil_url = ?`;
-      values.push(data.foto_pengambil_url);
-    }
+  const [result] = await db.execute(query, values);
 
-    query += ` WHERE id = ?`;
-    values.push(id);
-
-    const [result] = await db.execute(query, values);
-
-    if (result.affectedRows === 0) {
-      throw new Error(`Item dengan ID ${id} tidak ditemukan.`);
-    }
-
-    return result;
+  if (result.affectedRows === 0) {
+    throw new Error("Item tidak ditemukan");
   }
 
-  // UPDATE NO PENGAMBIL
-  static async updateNoPengambil(
-    id,
-    no_pengambil,
-    status_barang = "ditemukan",
-  ) {
-    const query = `
-      UPDATE items
-      SET no_pengambil = ?, status_barang = ?
-      WHERE id = ?
-    `;
+  return result;
+}
 
-    const [result] = await db.execute(query, [no_pengambil, status_barang, id]);
-
-    if (result.affectedRows === 0) {
-      throw new Error(`Item dengan ID ${id} tidak ditemukan.`);
-    }
-
-    return result;
-  }
 
   // AUTO ARSIP 30 HARI
   static async autoArchive() {
